@@ -1,7 +1,6 @@
 ﻿USE HowKteam
 GO	
 -- Group by : Lệnh Group by trong SQL Server được dùng để sắp xếp dữ liệu giống hệt nhau theo các nhóm với sự trợ giúp của một số hàm khác.
--- Để làm được điều này trong SQL, chúng ta có thể sử dụng câu lệnh GROUP BY.
 -- cột hiển thị phải là thuộc tính nằm trong khối group by hoặc là Agreegate function
 
 -- Xuất ra danh sách tên bộ môn và số lượng giáo viên của bộ môn đó 
@@ -35,13 +34,15 @@ WHERE GV.MAGV = NT.MAGV
 GROUP BY GV.HOTEN 
 
 -- 2. Xuất ra tên giáo viên và số lượng đề tài đã hoàn thành mà giáo viên đó đã tham gia
-SELECT GV.HOTEN, COUNT(TG.KETQUA) FROM dbo.GIAOVIEN AS GV, dbo.THAMGIADT AS TG
+SELECT GV.HOTEN, COUNT(TG.KETQUA)
+FROM dbo.GIAOVIEN AS GV, dbo.THAMGIADT AS TG
 WHERE GV.MAGV = TG.MAGV AND TG.KETQUA = N'Đạt'
 GROUP BY GV.HOTEN
 
 -- 3. Xuất ra tên khoa có tổng số lương của giáo viên trong khoa là lớn nhất
 
-SELECT TOP(1) K.TENKHOA, SUM(GV.LUONG) AS N'TONG LUONG' FROM dbo.KHOA AS K, dbo.GIAOVIEN AS GV, dbo.BOMON AS BM
+SELECT TOP(1) K.TENKHOA, SUM(GV.LUONG) AS N'TONG LUONG' 
+FROM dbo.KHOA AS K, dbo.GIAOVIEN AS GV, dbo.BOMON AS BM
 WHERE K.MAKHOA = BM.MAKHOA AND GV.MABM = BM.MABM
 GROUP BY K.TENKHOA
 
@@ -86,8 +87,13 @@ HAVING COUNT(*) > 2
 -- Xuất ra mức lương và tổng tuổi của giáo viên nhận mức lương đó
 -- và có người thân
 -- và tuổi phải lớn hơn tuổi trung bình
-SELECT LUONG, SUM( YEAR(GETDATE() - YEAR(dbo.GIAOVIEN.NGSINH))) FROM dbo.GIAOVIEN , dbo.NGUOITHAN
-WHERE dbo.GIAOVIEN.MAGV = dbo.NGUOITHAN.MAGV
-AND dbo.GIAOVIEN.MAGV IN (SELECT MAGV FROM dbo.NGUOITHAN )
-GROUP BY LUONG
-HAVING YEAR(GETDA)
+SELECT LUONG, SUM(YEAR(GETDATE()) - YEAR(GIAOVIEN.NGSINH))
+FROM dbo.GIAOVIEN, dbo.NGUOITHAN
+WHERE GIAOVIEN.MAGV = NGUOITHAN.MAGV
+AND GIAOVIEN.MAGV IN (SELECT MaGV FROM dbo.NGUOITHAN)
+GROUP BY LUONG, GIAOVIEN.NGSINH
+HAVING YEAR(GETDATE()) - YEAR(GIAOVIEN.NGSINH) > 
+(
+	(SELECT SUM(YEAR(GETDATE()) - YEAR(GIAOVIEN.NGSINH)) FROM dbo.GIAOVIEN)
+	/ (SELECT COUNT(*) FROM dbo.GIAOVIEN)
+)
