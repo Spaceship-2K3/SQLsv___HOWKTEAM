@@ -11,3 +11,6 @@ CREATE INDEX IndexName ON dbo.GIAOVIEN(MAGV)
 
 SELECT * FROM dbo.GIAOVIEN
 WHERE MAGV = '001' AND HOTEN ='VANSANG'
+
+-- Không cho phép các trường trùng nhau
+CREATE UNIQUE INDEX IndexNameUnique ON dbo.NGUOITHAN
